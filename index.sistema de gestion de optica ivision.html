@@ -1,0 +1,721 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Sistema IVISION</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins;
+}
+
+body{
+background:#f0f4f9;
+}
+
+/* LOGIN */
+
+#loginPage,#registerPage{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:linear-gradient(120deg,#1565c0,#42a5f5);
+}
+
+.card{
+background:white;
+padding:35px;
+border-radius:12px;
+width:320px;
+text-align:center;
+box-shadow:0 10px 30px rgba(0,0,0,0.2);
+}
+
+input,textarea{
+width:100%;
+padding:10px;
+margin:6px 0;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+textarea{
+min-height:120px;
+resize:vertical;
+}
+
+button{
+padding:10px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+margin-top:6px;
+}
+
+.btn{
+background:#1565c0;
+color:white;
+width:100%;
+}
+
+.btn2{
+background:#ddd;
+width:100%;
+}
+
+/* APP */
+
+#app{
+display:none;
+}
+
+header{
+background:#0d47a1;
+color:white;
+padding:15px;
+text-align:center;
+font-size:22px;
+}
+
+nav{
+background:#1565c0;
+display:flex;
+justify-content:center;
+gap:10px;
+padding:10px;
+flex-wrap:wrap;
+}
+
+nav button{
+background:white;
+color:#0d47a1;
+padding:8px 15px;
+}
+
+.container{
+max-width:1200px;
+margin:auto;
+padding:20px;
+}
+
+.panel{
+display:none;
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
+
+.panel.active{
+display:block;
+}
+
+/* DASHBOARD */
+
+.stats{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:15px;
+margin-bottom:20px;
+}
+
+.stat{
+background:#1565c0;
+color:white;
+padding:20px;
+border-radius:10px;
+text-align:center;
+}
+
+/* TABLAS */
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
+
+th{
+background:#1565c0;
+color:white;
+padding:10px;
+}
+
+td{
+padding:8px;
+border-bottom:1px solid #eee;
+text-align:center;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="loginPage">
+<div class="card">
+
+<h2>SISTEMA IVISION </h2>
+
+<input id="loginUser" placeholder="Usuario">
+<input type="password" id="loginPass" placeholder="Contraseña">
+
+<button class="btn" onclick="login()">Iniciar sesión</button>
+
+<p>¿No tienes cuenta?</p>
+<button class="btn2" onclick="mostrarRegistro()">Registrarse</button>
+
+</div>
+</div>
+
+<div id="registerPage" style="display:none">
+<div class="card">
+
+<h2>Crear cuenta</h2>
+
+<input id="newUser" placeholder="Usuario">
+<input type="password" id="newPass" placeholder="Contraseña">
+
+<button class="btn" onclick="register()">Crear cuenta</button>
+<button class="btn2" onclick="volverLogin()">Volver</button>
+
+</div>
+</div>
+
+<div id="app">
+
+<header>Sistema Clínica Visual PRO</header>
+
+<nav>
+<button onclick="panel('dashboard')">Dashboard</button>
+<button onclick="panel('pacientes')">Pacientes</button>
+<button onclick="panel('citas')">Citas</button>
+<button onclick="panel('inventario')">Inventario</button>
+<button onclick="panel('ventas')">Ventas</button>
+<button onclick="panel('reportes')">Reportes</button>
+<button onclick="logout()">Cerrar sesión</button>
+</nav>
+
+<div class="container">
+
+<div id="dashboard" class="panel active">
+
+<div class="stats">
+
+<div class="stat">
+<h3 id="totalPacientes">0</h3>
+Pacientes
+</div>
+
+<div class="stat">
+<h3 id="totalCitas">0</h3>
+Citas
+</div>
+
+<div class="stat">
+<h3 id="totalVentas">0</h3>
+Ventas
+</div>
+
+<div class="stat">
+<h3 id="totalProductos">0</h3>
+Productos
+</div>
+
+</div>
+
+<canvas id="graficaSistema"></canvas>
+
+</div>
+
+<div id="pacientes" class="panel">
+
+<h2>Pacientes</h2>
+
+<input id="buscarPacienteInput" placeholder="Buscar paciente..." onkeyup="buscarPaciente()">
+
+<input id="nombrePaciente" placeholder="Nombre">
+<input id="apellidoPaciente" placeholder="Apellido">
+<input id="telefonoPaciente" placeholder="Teléfono">
+<input type="date" id="nacimientoPaciente">
+
+<textarea id="diagnosticoPaciente" placeholder="Diagnóstico"></textarea>
+
+<h3>Ojo Derecho</h3>
+<input id="od_esf" placeholder="ESF">
+<input id="od_cil" placeholder="CIL">
+<input id="od_eje" placeholder="EJE">
+
+<h3>Ojo Izquierdo</h3>
+<input id="oi_esf" placeholder="ESF">
+<input id="oi_cil" placeholder="CIL">
+<input id="oi_eje" placeholder="EJE">
+
+<button class="btn" onclick="guardarPaciente()">Guardar</button>
+
+<table>
+
+<thead>
+<tr>
+<th>Nombre</th>
+<th>Apellido</th>
+<th>Edad</th>
+<th>Teléfono</th>
+<th>Diagnóstico</th>
+<th>OD</th>
+<th>OI</th>
+<th>Acciones</th>
+</tr>
+</thead>
+
+<tbody id="tablaPacientes"></tbody>
+
+</table>
+
+</div>
+
+<div id="citas" class="panel">
+
+<h2>Citas</h2>
+
+<input id="pacienteCita" placeholder="Paciente">
+<input type="date" id="fechaCita">
+<input type="time" id="horaCita">
+
+<button class="btn" onclick="guardarCita()">Agendar</button>
+
+<table>
+<thead>
+<tr>
+<th>Paciente</th>
+<th>Fecha</th>
+<th>Hora</th>
+</tr>
+</thead>
+
+<tbody id="tablaCitas"></tbody>
+
+</table>
+
+</div>
+
+<div id="inventario" class="panel">
+
+<h2>Inventario</h2>
+
+<input id="producto" placeholder="Producto">
+<input id="precio" type="number" placeholder="Precio">
+<input id="stock" type="number" placeholder="Stock">
+
+<button class="btn" onclick="guardarProducto()">Guardar</button>
+
+<table>
+
+<thead>
+<tr>
+<th>Producto</th>
+<th>Precio</th>
+<th>Stock</th>
+</tr>
+</thead>
+
+<tbody id="tablaInventario"></tbody>
+
+</table>
+
+</div>
+
+<div id="ventas" class="panel">
+
+<h2>Ventas</h2>
+
+<input id="clienteVenta" placeholder="Cliente">
+<input id="productoVenta" placeholder="Producto">
+<input id="precioVenta" placeholder="Precio">
+
+<button class="btn" onclick="guardarVenta()">Registrar</button>
+
+<table>
+
+<thead>
+<tr>
+<th>Cliente</th>
+<th>Producto</th>
+<th>Precio</th>
+<th>Factura</th>
+</tr>
+</thead>
+
+<tbody id="tablaVentas"></tbody>
+
+</table>
+
+</div>
+
+<div id="reportes" class="panel">
+
+<h2>Reporte de ventas</h2>
+
+<button class="btn" onclick="reportePDF()">Generar PDF</button>
+
+</div>
+
+</div>
+</div>
+
+<script>
+
+let pacientes = JSON.parse(localStorage.getItem("pacientes")) || []
+let citas = JSON.parse(localStorage.getItem("citas")) || []
+let inventario = JSON.parse(localStorage.getItem("inventario")) || []
+let ventas = JSON.parse(localStorage.getItem("ventas")) || []
+
+function register(){
+localStorage.setItem("usuarioSistema",newUser.value)
+localStorage.setItem("passSistema",newPass.value)
+alert("Cuenta creada")
+volverLogin()
+}
+
+function login(){
+let u=localStorage.getItem("usuarioSistema")
+let p=localStorage.getItem("passSistema")
+
+if(loginUser.value===u && loginPass.value===p){
+loginPage.style.display="none"
+app.style.display="block"
+render()
+}else{
+alert("Usuario incorrecto")
+}
+}
+
+function logout(){
+app.style.display="none"
+loginPage.style.display="flex"
+}
+
+function mostrarRegistro(){
+loginPage.style.display="none"
+registerPage.style.display="flex"
+}
+
+function volverLogin(){
+registerPage.style.display="none"
+loginPage.style.display="flex"
+}
+
+function guardarPaciente(){
+
+let edad=new Date().getFullYear()-new Date(nacimientoPaciente.value).getFullYear()
+
+pacientes.push({
+
+nombre:nombrePaciente.value,
+apellido:apellidoPaciente.value,
+edad,
+telefono:telefonoPaciente.value,
+diagnostico:diagnosticoPaciente.value,
+
+od:{
+esf:od_esf.value,
+cil:od_cil.value,
+eje:od_eje.value
+},
+
+oi:{
+esf:oi_esf.value,
+cil:oi_cil.value,
+eje:oi_eje.value
+}
+
+})
+
+render()
+
+}
+
+function eliminarPaciente(i){
+
+if(confirm("Eliminar paciente?")){
+pacientes.splice(i,1)
+render()
+}
+
+}
+
+function editarPaciente(i){
+
+let p=pacientes[i]
+
+nombrePaciente.value=p.nombre
+apellidoPaciente.value=p.apellido
+telefonoPaciente.value=p.telefono
+diagnosticoPaciente.value=p.diagnostico
+
+od_esf.value=p.od.esf
+od_cil.value=p.od.cil
+od_eje.value=p.od.eje
+
+oi_esf.value=p.oi.esf
+oi_cil.value=p.oi.cil
+oi_eje.value=p.oi.eje
+
+pacientes.splice(i,1)
+
+}
+
+function generarReceta(i){
+
+const { jsPDF } = window.jspdf
+
+let p=pacientes[i]
+
+let doc=new jsPDF()
+
+doc.setFontSize(20)
+doc.text("CLÍNICA VISUAL",70,20)
+
+doc.text("Paciente: "+p.nombre+" "+p.apellido,20,50)
+
+doc.text("Diagnóstico:",20,80)
+doc.text(p.diagnostico,20,90)
+
+doc.text("OD ESF:"+p.od.esf+" CIL:"+p.od.cil+" EJE:"+p.od.eje,20,120)
+doc.text("OI ESF:"+p.oi.esf+" CIL:"+p.oi.cil+" EJE:"+p.oi.eje,20,140)
+
+doc.save("receta_"+p.nombre+".pdf")
+
+}
+
+function facturaPDF(i){
+
+const { jsPDF } = window.jspdf
+
+let v=ventas[i]
+
+let doc=new jsPDF()
+
+doc.text("FACTURA",90,20)
+doc.text("Cliente: "+v.cliente,20,60)
+doc.text("Producto: "+v.producto,20,70)
+doc.text("Precio: $"+v.precio,20,80)
+
+doc.save("factura.pdf")
+
+}
+
+function guardarVenta(){
+
+ventas.push({
+cliente:clienteVenta.value,
+producto:productoVenta.value,
+precio:precioVenta.value
+})
+
+render()
+
+}
+
+function guardarProducto(){
+
+inventario.push({
+producto:producto.value,
+precio:precio.value,
+stock:stock.value
+})
+
+render()
+
+}
+
+function guardarCita(){
+
+citas.push({
+paciente:pacienteCita.value,
+fecha:fechaCita.value,
+hora:horaCita.value
+})
+
+render()
+
+}
+
+function reportePDF(){
+
+const { jsPDF } = window.jspdf
+
+let doc=new jsPDF()
+
+doc.text("Reporte de ventas",20,20)
+
+let y=40
+
+ventas.forEach(v=>{
+doc.text(v.cliente+" "+v.producto+" $"+v.precio,20,y)
+y+=10
+})
+
+doc.save("reporte.pdf")
+
+}
+
+function buscarPaciente(){
+
+let texto=buscarPacienteInput.value.toLowerCase()
+
+tablaPacientes.innerHTML=""
+
+pacientes
+.filter(p=>p.nombre.toLowerCase().includes(texto)
+||p.apellido.toLowerCase().includes(texto)
+||p.telefono.includes(texto))
+.forEach((p,i)=>{
+
+tablaPacientes.innerHTML+=`
+<tr>
+<td>${p.nombre}</td>
+<td>${p.apellido}</td>
+<td>${p.edad}</td>
+<td>${p.telefono}</td>
+<td>${p.diagnostico}</td>
+
+<td>
+ESF:${p.od.esf}<br>
+CIL:${p.od.cil}<br>
+EJE:${p.od.eje}
+</td>
+
+<td>
+ESF:${p.oi.esf}<br>
+CIL:${p.oi.cil}<br>
+EJE:${p.oi.eje}
+</td>
+
+<td>
+<button onclick="generarReceta(${i})">Receta</button>
+<button onclick="editarPaciente(${i})">Editar</button>
+<button onclick="eliminarPaciente(${i})">Eliminar</button>
+</td>
+
+</tr>`
+
+})
+
+}
+
+function grafica(){
+
+let ctx=document.getElementById("graficaSistema")
+
+new Chart(ctx,{
+type:"bar",
+data:{
+labels:["Pacientes","Citas","Ventas","Productos"],
+datasets:[{
+label:"Estadísticas",
+data:[
+pacientes.length,
+citas.length,
+ventas.length,
+inventario.length
+]
+}]
+}
+})
+
+}
+
+function render(){
+
+totalPacientes.innerText=pacientes.length
+totalCitas.innerText=citas.length
+totalVentas.innerText=ventas.length
+totalProductos.innerText=inventario.length
+
+tablaPacientes.innerHTML=""
+
+pacientes.forEach((p,i)=>{
+
+tablaPacientes.innerHTML+=`
+<tr>
+
+<td>${p.nombre}</td>
+<td>${p.apellido}</td>
+<td>${p.edad}</td>
+<td>${p.telefono}</td>
+<td>${p.diagnostico}</td>
+
+<td>
+ESF:${p.od.esf}<br>
+CIL:${p.od.cil}<br>
+EJE:${p.od.eje}
+</td>
+
+<td>
+ESF:${p.oi.esf}<br>
+CIL:${p.oi.cil}<br>
+EJE:${p.oi.eje}
+</td>
+
+<td>
+<button onclick="generarReceta(${i})">Receta</button>
+<button onclick="editarPaciente(${i})">Editar</button>
+<button onclick="eliminarPaciente(${i})">Eliminar</button>
+</td>
+
+</tr>`
+
+})
+
+tablaVentas.innerHTML=""
+
+ventas.forEach((v,i)=>{
+
+tablaVentas.innerHTML+=`
+<tr>
+<td>${v.cliente}</td>
+<td>${v.producto}</td>
+<td>$${v.precio}</td>
+<td><button onclick="facturaPDF(${i})">Factura</button></td>
+</tr>`
+
+})
+
+localStorage.setItem("pacientes",JSON.stringify(pacientes))
+localStorage.setItem("ventas",JSON.stringify(ventas))
+localStorage.setItem("citas",JSON.stringify(citas))
+localStorage.setItem("inventario",JSON.stringify(inventario))
+
+grafica()
+
+}
+
+function panel(id){
+
+document.querySelectorAll(".panel")
+.forEach(p=>p.classList.remove("active"))
+
+document.getElementById(id).classList.add("active")
+
+}
+
+render()
+
+</script>
+
+</body>
+</html>
+```
+
